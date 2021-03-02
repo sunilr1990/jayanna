@@ -13,6 +13,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize
 public class ApiError {
 
+    public ApiError(String errorMessage, String errorCode) {
+        this.errorMessage = errorMessage;
+        this.errorCode = errorCode;
+    }
+
+    public ApiError() {
+    }
+
     private String errorMessage;
 
     private String errorCode;

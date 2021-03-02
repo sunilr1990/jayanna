@@ -3,13 +3,16 @@
  */
 package com.assignment.question.papaer.generator.service;
 
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.assignment.question.paper.generator.exception.QuestionPaperValidationException;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,6 +71,7 @@ public class QuestionPaperGeneratorService {
 			// extractQuestionsBasedOnMarks(distributionMap.get("EASY"),
 			// QuestionLibrary.easyQuestionList));
 		}
+		validateGeneratedQuestions(questionPaperSet, totalMarks);
 		// get the total no of marks in the set == 70
 		// -- delta = 30 == 30/5 = 6
 		// reminder in range of 10 > easy
@@ -79,6 +83,16 @@ public class QuestionPaperGeneratorService {
 		questionPaper.setInstructions(ApplicationConstant.INSTRUCTIONS);
 		questionPaper.setQuestions(questionPaperSet);
 		return questionPaper;
+	}
+
+	private void validateGeneratedQuestions(Set<Question> questionPaperSet, Integer totalMarks) {
+		Integer generatedMarks = questionPaperSet.stream().map(Question::getMarks).reduce(0, (a, b) -> a + b);
+		if(totalMarks != generatedMarks) {
+			throw new QuestionPaperValidationException(ErrorConstant.NOT_ENOUGH_MARKS, MessageFormat.format(
+					config.messageSource().getMessage(ErrorConstant.NOT_ENOUGH_MARKS, null, Locale.ENGLISH), totalMarks));
+		}
+
+
 	}
 
 	public QuestionPaper generateQuestionPapaerSet(Integer totalMarks, String stratergy, Integer[] distributions) {
@@ -114,14 +128,21 @@ public class QuestionPaperGeneratorService {
 
 	private Set<Question> extractQuestionsForMarksDistribution(Double marks, MultiKeyMap questionMap, String type) {
 		Set<Question> questionPaperSet = new HashSet<Question>();
-		Double noOfQuestions = marks / 5;
+		Double noOfQuestions = getNumberOfQuestions(marks, type);
 		Integer generatedMarks = 1;
 		while (generatedMarks <= noOfQuestions) {
 			Question question = (Question) questionMap.get(generatedMarks, type);
-			questionPaperSet.add(question);
+			if(question !=null) {
+				questionPaperSet.add(question);
+			}
 			generatedMarks++;
 		}
 		return questionPaperSet;
+	}
+
+	private Double getNumberOfQuestions(Double marks, String type) {
+		//Checking for only two types
+		return type.equalsIgnoreCase("DIFFICULT") ? marks/10 :marks/5;
 	}
 
 }

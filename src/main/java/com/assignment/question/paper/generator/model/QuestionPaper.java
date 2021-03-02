@@ -5,6 +5,7 @@ package com.assignment.question.paper.generator.model;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class QuestionPaper {
 
     private int totalMarks;
